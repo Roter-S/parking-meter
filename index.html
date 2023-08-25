@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      var userLanguage = navigator.language || navigator.userLanguage;
+
+      function updateLangAttribute() {
+        var htmlElement = document.querySelector('html');
+        if (userLanguage.startsWith('es')) {
+          htmlElement.setAttribute('lang', 'es');
+        } else {
+          htmlElement.setAttribute('lang', 'en');
+        }
+      }
+      updateLangAttribute();
+    </script>
+    <script src="https://kit.fontawesome.com/96ea037ffc.js" crossorigin="anonymous"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
