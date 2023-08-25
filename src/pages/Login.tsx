@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from "react";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import { useEffect } from "react";
 import { login } from "../services/firebase";
 import { Link, useNavigate } from "react-router-dom";
 import { useUserContext } from "../context/UserContext";
 
-import { Avatar, Box, Button, TextField, Typography } from "@mui/material";
-import { LoadingButton } from "@mui/lab";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { LoadingButton } from "@mui/lab";
 
-interface LoginProps {}
-
-const Login: React.FC<LoginProps> = () => {
+const Login = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
 
@@ -19,43 +28,37 @@ const Login: React.FC<LoginProps> = () => {
     }
   }, [user]);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
-
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
-  };
-
-  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
+  const onSubmit = async (
+    { email, password }: { email: string; password: string },
+    { setSubmitting, setErrors, resetForm }: any
+  ) => {
     try {
       const credentialUser = await login({ email, password });
       console.log(credentialUser);
-      setEmail("");
-      setPassword("");
+      resetForm();
     } catch (error: any) {
-      // Explicitly type the error as 'any'
+      if (typeof error.code === "string") {
+        const authErrorCode = error.code;
+        if (authErrorCode === "auth/user-not-found") {
+          setErrors({ email: "Email no registrado" });
+        }
+        if (authErrorCode === "auth/wrong-password") {
+          setErrors({ password: "Contraseña incorrecta" });
+        }
+      }
       console.log(error);
-      if (error.code === "auth/user-not-found") {
-        setErrors({ email: "Email no registrado" });
-      }
-      if (error.code === "auth/wrong-password") {
-        setErrors({ password: "Contraseña incorrecta" });
-      }
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
+
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email("Email no válido").required("Email requerido"),
+    password: Yup.string()
+      .trim()
+      .min(6, "Mínimo 6 caracteres")
+      .required("Contraseña requerida"),
+  });
 
   return (
     <Box
@@ -63,10 +66,9 @@ const Login: React.FC<LoginProps> = () => {
         width: "100%",
         height: "100vh",
         display: "flex",
-        paddingX: "1rem",
       }}
     >
-      <Box
+      <Card
         sx={{
           maxWidth: 400,
           textAlign: "center",
@@ -74,59 +76,67 @@ const Login: React.FC<LoginProps> = () => {
           mx: "auto",
         }}
       >
-        <Avatar sx={{ mx: "auto", bgcolor: "#444" }}>
-          <LockOutlinedIcon />
-        </Avatar>
+        <CardContent>
+          <Avatar sx={{ mx: "auto", bgcolor: "secondary.main" }}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Sign in
+          </Typography>
 
-        <Typography component="h1" variant="h5">
-          Sign in
-        </Typography>
-
-        <Box onSubmit={handleSubmit} component="form" sx={{ mt: 1 }}>
-          <TextField
-            type="text"
-            placeholder="test@example.com"
-            value={email}
-            onChange={handleEmailChange}
-            name="email"
-            id="email"
-            label="Ingrese email"
-            fullWidth
-            sx={{ mb: 3 }}
-            error={!!errors.email}
-            helperText={errors.email}
-          />
-
-          <TextField
-            type="password"
-            placeholder="Ingrese contraseña"
-            value={password}
-            onChange={handlePasswordChange}
-            name="password"
-            id="password"
-            label="Ingrese contraseña"
-            fullWidth
-            sx={{ mb: 3 }}
-            error={!!errors.password}
-            helperText={errors.password}
-          />
-
-          <LoadingButton
-            type="submit"
-            disabled={isSubmitting}
-            loading={isSubmitting}
-            variant="contained"
-            fullWidth
-            sx={{ mb: 3 }}
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            onSubmit={onSubmit}
+            validationSchema={validationSchema}
           >
-            Login
-          </LoadingButton>
+            {({ isSubmitting, errors }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  fullWidth
+                  sx={{ mb: 3 }}
+                  label="Email Address"
+                  id="email"
+                  type="text"
+                  placeholder="Ingrese email"
+                  name="email"
+                  error={Boolean(errors?.email)}
+                  helperText={errors?.email}
+                />
 
-          <Button component={Link} to="/register" fullWidth>
-            ¿No tienes cuenta? Regístrate
-          </Button>
-        </Box>
-      </Box>
+                <Field
+                  as={TextField}
+                  fullWidth
+                  label="Password"
+                  id="password"
+                  type="password"
+                  placeholder="Ingrese contraseña"
+                  name="password"
+                  error={Boolean(errors?.password)}
+                  helperText={errors?.password}
+                />
+                <LoadingButton
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  fullWidth
+                  type="submit"
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                >
+                  Login
+                </LoadingButton>
+                <Grid container>
+                  <Grid item xs>
+                    <Button component={Link} to="/register">
+                      ¿No tienes cuenta? Registrate
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
     </Box>
   );
 };

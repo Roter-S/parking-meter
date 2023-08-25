@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
 import { register } from "../services/firebase";
 import { useUserContext } from "../context/UserContext";
 import { useRedirectActiveUser } from "../hooks/useRedirectActiveUser";
@@ -8,6 +9,8 @@ import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardContent,
   Grid,
   TextField,
   Typography,
@@ -15,48 +18,39 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { LoadingButton } from "@mui/lab";
 
-interface RegisterProps {}
-
-const Register: React.FC<RegisterProps> = () => {
+const Register = () => {
   const { user } = useUserContext();
 
+  // alternativa con hook
   useRedirectActiveUser(user, "/dashboard");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
-
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
-  };
-
-  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
+  const onSubmit = async (
+    { email, password }: { email: string; password: string },
+    { setSubmitting, setErrors, resetForm }: any
+  ) => {
     try {
       await register({ email, password });
       console.log("user registered");
-      setEmail("");
-      setPassword("");
+      resetForm();
     } catch (error: any) {
-      console.log(error.code);
+      const authError = error as { code: string };
+      console.log(authError.code);
       console.log(error.message);
-      if (error.code === "auth/email-already-in-use") {
+      if (authError.code === "auth/email-already-in-use") {
         setErrors({ email: "Email already in use" });
       }
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
+
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email("Email no válido").required("Email obligatorio"),
+    password: Yup.string()
+      .trim()
+      .min(6, "Mínimo 6 carácteres")
+      .required("Password obligatorio"),
+  });
 
   return (
     <Box
@@ -66,7 +60,7 @@ const Register: React.FC<RegisterProps> = () => {
         display: "flex",
       }}
     >
-      <Box
+      <Card
         sx={{
           maxWidth: 400,
           textAlign: "center",
@@ -74,59 +68,68 @@ const Register: React.FC<RegisterProps> = () => {
           mx: "auto",
         }}
       >
-        <Avatar sx={{ mx: "auto", bgcolor: "secondary.main" }}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Registro
-        </Typography>
-
-        <Box onSubmit={handleSubmit} component="form" sx={{ mt: 1 }}>
-          <TextField
-            sx={{ mb: 3 }}
-            fullWidth
-            label="Email Address"
-            id="email"
-            type="text"
-            placeholder="Ingrese email"
-            value={email}
-            onChange={handleEmailChange}
-            name="email"
-            error={!!errors.email}
-            helperText={errors.email}
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            id="password"
-            type="password"
-            placeholder="Ingrese contraseña"
-            value={password}
-            onChange={handlePasswordChange}
-            name="password"
-            error={!!errors.password}
-            helperText={errors.password}
-          />
-          <LoadingButton
-            variant="contained"
-            color="secondary"
-            sx={{ mt: 3, mb: 2 }}
-            fullWidth
-            type="submit"
-            disabled={isSubmitting}
-            loading={isSubmitting}
+        <CardContent>
+          <Avatar sx={{ mx: "auto", bgcolor: "secondary.main" }}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Registro
+          </Typography>
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            onSubmit={onSubmit}
+            validationSchema={validationSchema}
           >
-            Register
-          </LoadingButton>
-          <Grid container>
-            <Grid item xs>
-              <Button component={Link} to="/" color="secondary">
-                ¿Ya tienes cuenta? Accede aquí
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Box>
+            {({ isSubmitting, errors }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  sx={{ mb: 3 }}
+                  fullWidth
+                  label="Email Address"
+                  id="email"
+                  type="text"
+                  placeholder="Ingrese email"
+                  name="email"
+                  error={Boolean(errors.email)}
+                  helperText={errors.email}
+                />
+
+                <Field
+                  as={TextField}
+                  fullWidth
+                  label="Password"
+                  id="password"
+                  type="password"
+                  placeholder="Ingrese contraseña"
+                  name="password"
+                  error={Boolean(errors.password)}
+                  helperText={errors.password}
+                />
+
+                <LoadingButton
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mt: 3, mb: 2 }}
+                  fullWidth
+                  type="submit"
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                >
+                  Register
+                </LoadingButton>
+                <Grid container>
+                  <Grid item xs>
+                    <Button component={Link} to="/" color="secondary">
+                      ¿Ya tienes cuenta? Accede aquí
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
     </Box>
   );
 };
