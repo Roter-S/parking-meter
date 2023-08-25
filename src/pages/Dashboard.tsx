@@ -9,12 +9,12 @@ import {
   Container,
   Avatar,
   Button,
-  Tooltip,
   MenuItem,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import { logOut } from "../services/firebase";
+import { useUserContext } from "../context/UserContext";
 
 const Dashboard: React.FC = () => {
   const pages = ["Products", "Pricing", "Blog"];
@@ -47,6 +47,9 @@ const Dashboard: React.FC = () => {
       console.log(error);
     }
   };
+
+  const { user } = useUserContext();
+  user ? user.email : null;
 
   return (
     <AppBar position="static">
@@ -143,11 +146,10 @@ const Dashboard: React.FC = () => {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-              </IconButton>
-            </Tooltip>
+            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+              <Avatar alt="Remy Sharp" src="" />
+            </IconButton>
+
             <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
@@ -164,6 +166,11 @@ const Dashboard: React.FC = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
+              {user && user.email && (
+                <MenuItem>
+                  <Typography textAlign="center">{user.email}</Typography>
+                </MenuItem>
+              )}
               <MenuItem onClick={handleLogout}>
                 <Typography textAlign="center">Logout</Typography>
               </MenuItem>
