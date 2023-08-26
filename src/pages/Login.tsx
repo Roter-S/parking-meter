@@ -33,8 +33,7 @@ const Login = () => {
     { setSubmitting, setErrors, resetForm }: any
   ) => {
     try {
-      const credentialUser = await login({ email, password });
-      console.log(credentialUser);
+      await login({ email, password });
       resetForm();
     } catch (error: any) {
       if (typeof error.code === "string") {
@@ -77,7 +76,7 @@ const Login = () => {
         }}
       >
         <CardContent>
-          <Avatar sx={{ mx: "auto", bgcolor: "secondary.main" }}>
+          <Avatar sx={{ mx: "auto", bgcolor: "primary.main" }}>
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
@@ -127,7 +126,7 @@ const Login = () => {
                 </LoadingButton>
                 <Grid container>
                   <Grid item xs>
-                    <Button component={Link} to="/register">
+                    <Button color="primary" component={Link} to="/register">
                       ¿No tienes cuenta? Registrate
                     </Button>
                   </Grid>

@@ -1,4 +1,6 @@
 import { Box } from "@mui/material";
+import { IconContext } from "react-icons";
+import { FaSpinner } from "react-icons/fa6";
 
 const Loader = () => {
   return (
@@ -7,7 +9,7 @@ const Loader = () => {
         width: "100%",
         height: "100vh",
         display: "flex",
-        backgroundColor: "rgba(0,0,0,0.5)",
+        background: "030D22",
       }}
     >
       <Box
@@ -16,7 +18,11 @@ const Loader = () => {
           my: "auto",
         }}
       >
-        <i className="fas fa-circle-notch fa-spin text-primary fa-3x"></i>
+        <IconContext.Provider
+          value={{ color: "blue", className: "global-class-name", size: "5em" }}
+        >
+          <FaSpinner />
+        </IconContext.Provider>
       </Box>
     </Box>
   );

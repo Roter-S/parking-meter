@@ -5,6 +5,7 @@ import PrivateLayout from "../components/layouts/PrivateLayout";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import Loader from "../components/Common/Loader";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
       {
         path: "register",
         element: <Register />,
+      },
+      {
+        path: "loader",
+        element: <Loader />,
       },
       {
         path: "dashboard",

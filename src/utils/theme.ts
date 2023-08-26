@@ -1,17 +1,49 @@
-import { createTheme } from "@mui/material/styles";
-import { red } from "@mui/material/colors";
+import { createTheme } from '@mui/material/styles';
+import { blue, pink, red, lightBlue, yellow, teal } from '@mui/material/colors';
 
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: "#556cd6",
+      main: blue[600],
     },
     secondary: {
-      main: "#19857b",
+      main: pink[600],
     },
     error: {
-      main: red.A400,
+      main: red[500],
     },
+    warning: {
+      main: yellow[500],
+    },
+    info: {
+      main: lightBlue[300],
+    },
+    success: {
+      main: teal[400],
+    },
+    background: {
+      default: '#030D22',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '15px',
+        }
+      }
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+        }
+      }
+    }
   },
 });
 
